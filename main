@@ -1,1 +1,63 @@
+import pandas as pd
 
+df = pd.read_csv('/content/drive/MyDrive/apple_quality.csv')
+df['Quality'] = df['Quality'].replace(['good', 'bad'], [1, 0])
+
+X = df.drop('Quality', axis=1)
+
+Y = df['Quality']
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=.2, random_state=100)
+
+from sklearn.linear_model import LogisticRegression
+lr = LogisticRegression(random_state=0)
+lr.fit(X=X_train, y=Y_train)
+
+Y_lr_train = lr.predict(X_train)
+Y_lr_test = lr.predict(X_test)
+
+from sklearn.metrics import log_loss, accuracy_score
+lr_train_llos = log_loss(Y_train, Y_lr_train)
+lr_train_acc = accuracy_score(Y_train, Y_lr_train)
+
+lr_test_llos = log_loss(Y_test, Y_lr_test)
+lr_test_acc = accuracy_score(Y_test, Y_lr_test)
+
+lr_results = pd.DataFrame(['logistic regression', lr_train_acc, lr_train_llos, lr_test_acc, lr_test_llos]).transpose()
+lr_results.columns = ['Methods', 'Training accuracy', 'training log_los ', 'testing accuracy ', 'testing log_los']
+
+from sklearn.ensemble import RandomForestClassifier
+
+rf = RandomForestClassifier(max_depth=2, random_state=1)
+rf.fit(X_train, Y_train)
+
+Y_rf_train = rf.predict(X_train)
+Y_rf_test = rf.predict(X_test)
+
+rf_train_llos = log_loss(Y_train, Y_rf_train)
+rf_train_acc = accuracy_score(Y_train, Y_rf_train)
+
+rf_test_llos = log_loss(Y_test, Y_rf_test)
+rf_test_acc = accuracy_score(Y_test, Y_rf_test)
+
+rf_results = pd.DataFrame(['logistic regression', rf_train_acc, rf_train_llos, rf_test_acc, rf_test_llos]).transpose()
+rf_results.columns = ['Methods', 'Training accuracy', 'training log_los ', 'testing accuracy ', 'testing log_los']
+
+from sklearn.tree import DecisionTreeClassifier
+tr = DecisionTreeClassifier(random_state=1000)
+tr.fit(X_train, Y_train)
+
+Y_tr_train = tr.predict(X_train)
+Y_tr_test = tr.predict(X_test)
+
+tr_train_llos = log_loss(Y_train, Y_tr_train)
+tr_train_acc = accuracy_score(Y_train, Y_tr_train)
+
+tr_test_llos = log_loss(Y_test, Y_tr_test)
+tr_test_acc = accuracy_score(Y_test, Y_tr_test)
+
+tr_results = pd.DataFrame(['decision tree', tr_train_acc, tr_train_llos, tr_test_acc, tr_test_llos]).transpose()
+tr_results.columns = ['Methods', 'Training accuracy', 'training log_los ', 'testing accuracy ', 'testing log_los']
+
+df_models = pd.concat([lr_results, rf_results, tr_results]).reset_index(drop=True)
